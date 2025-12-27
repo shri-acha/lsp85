@@ -1,6 +1,7 @@
 #[macro_use]
 pub mod routers;
 pub mod bindings;
+pub mod completion_items;
 pub mod handlers;
 
 use lsp_server::{Connection, IoThreads, Message, Notification, Request, RequestId};
