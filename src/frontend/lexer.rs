@@ -12,7 +12,7 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(source: String, line_no: usize) -> Self {
         let chars: Vec<char> = source.chars().collect();
-        let ch = chars.get(0).copied().expect("source of size <1?");
+        let ch = chars.first().copied().expect("source of size <1?");
         Self {
             chars,
             ch,

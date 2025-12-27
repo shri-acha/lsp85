@@ -43,7 +43,7 @@ pub fn wasm_completion_handler(id: &RequestId, params: &CompletionParams) -> Res
     let result = CompletionResponse::Array(get_completion_items());
     let result = match serde_json::to_string(&result) {
         Ok(result) => result,
-        Err(_e) => "[ERROR] failed to convert JSON-2-String".to_string(),
+        Err(_) => "[ERROR] failed to convert JSON-2-String".to_string(),
     };
     serde_wasm_bindgen::to_value(&result).map_err(|e| JsValue::from_str(&e.to_string()))
 }
