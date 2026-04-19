@@ -55,29 +55,25 @@ impl Parser {
                 Token {
                     tok_type: TokenType::OPERATION,
                     ..
-                } => {
-                    return self.parse_operation();
-                }
+                } => self.parse_operation(),
                 Token {
                     tok_type: TokenType::REGISTER,
                     ..
                 } => {
                     println!("unexpected placement of register!");
-                    return None;
+                    None
                 }
                 Token {
                     tok_type: TokenType::EOF,
                     ..
-                } => {
-                    return None;
-                }
+                } => None,
                 _ => {
                     self.tok_stream.next();
-                    return self.parse_expression();
+                    self.parse_expression()
                 }
             }
         } else {
-            return None;
+            None
         }
     }
     pub fn parse_operation(&mut self) -> Option<Node> {
@@ -96,49 +92,39 @@ impl Parser {
                 } => {
                     l_child.branch.l_child = self.parse_operand();
                     l_child.branch.r_child = self.parse_operand();
-                    return Some(l_child);
+                    Some(l_child)
                 }
-                _ => {
-                    return Some(l_child);
-                }
+                _ => Some(l_child),
             }
         } else {
-            return Some(l_child);
+            Some(l_child)
         }
     }
     pub fn parse_operand(&mut self) -> Option<Node> {
-        let mut l_child: Node;
         if let Some(peeked_token) = self.tok_stream.peek() {
             match peeked_token {
                 Token {
                     tok_type: TokenType::REGISTER,
                     ..
+                } | Token {
+                    tok_type: TokenType::IMM_VALUE,
+                    ..
                 } => {
                     let token_buffer = peeked_token.clone();
                     self.tok_stream.next();
-                    return Some(Node::new(token_buffer, Box::new(Tree::default())));
+                    Some(Node::new(token_buffer, Box::new(Tree::default())))
                 }
                 Token {
                     tok_type: TokenType::COMMA_DELIM,
                     ..
                 } => {
                     self.tok_stream.next();
-                    return self.parse_operand();
+                    self.parse_operand()
                 }
-                Token {
-                    tok_type: TokenType::IMM_VALUE,
-                    ..
-                } => {
-                    let token_buffer = peeked_token.clone();
-                    self.tok_stream.next();
-                    return Some(Node::new(token_buffer, Box::new(Tree::default())));
-                }
-                _ => {
-                    return None;
-                }
+                _ => None,
             }
         } else {
-            return None;
+            None
         }
     }
 }

@@ -11,10 +11,11 @@ use lsp_types::{
     CompletionItem, CompletionResponse,
     request::{Completion, HoverRequest},
 };
+use server::bindings::{wasm_completion_handler, wasm_hover_handler};
 use server::{handlers, lsp85, routers};
 use std::error::Error;
 
-fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
+pub fn main() -> Result<(), Box<dyn Error>> {
     let lsp = lsp85::build()
         .stdio()
         .enable_hover()
@@ -109,11 +110,3 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 //         println!("{:?}",ast_list);
 //     }
 // }
-
-fn cast<R>(req: Request) -> Result<(RequestId, R::Params), ExtractError<Request>>
-where
-    R: lsp_types::request::Request,
-    R::Params: serde::de::DeserializeOwned,
-{
-    req.extract(R::METHOD)
-}
