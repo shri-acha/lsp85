@@ -3,14 +3,14 @@ pub mod routers;
 pub mod bindings;
 pub mod completion_items;
 pub mod handlers;
+pub mod utils;
 
-use lsp_server::{Connection, IoThreads, Message, Notification, Request, RequestId};
+use lsp_server::{Connection, IoThreads, RequestId};
 use lsp_types::{
     ClientCapabilities, CompletionOptions, HoverProviderCapability, InitializeParams,
     ServerCapabilities,
 };
 use std::error::Error;
-use std::rc::Rc;
 
 pub struct lsp85 {
     id: Option<RequestId>,
