@@ -126,8 +126,29 @@ impl Lexer {
 }
 fn get_identifier_token(identifier_lit: &str) -> TokenType {
     match identifier_lit {
-        "ADD" | "SUB" | "MOV" | "MVI" | "LXI" | "PUSH" | "POP" | "INR" | "DCR" | "DAD" | "LDAX"
-        | "STAX" => TokenType::OPERATION,
+        "ADD" | "ADI" | "ADC" | "ACI" |
+        "SUB" | "SUI" | "SBB" | "SBI" |
+        "MOV" | "MVI" |
+        "LDA" | "LDAX" | "LHLD" | "LXI" |
+        "STA" | "STAX" | "SHLD" |
+        "PUSH" | "POP" |
+        "INR" | "INX" |
+        "DCR" | "DCX" |
+        "DAD" | "DAA" |
+        "XCHG" | "XTHL" | "SPHL" | "PCHL" |
+        "ANA" | "ANI" |
+        "ORA" | "ORI" |
+        "XRA" | "XRI" |
+        "CMP" | "CPI" |
+        "CMA" | "CMC" | "STC" |
+        "RLC" | "RRC" | "RAL" | "RAR" |
+        "JMP" | "JC" | "JNC" | "JZ" | "JNZ" | "JM" | "JP" | "JPE" | "JPO" |
+        "CALL" | "CC" | "CNC" | "CZ" | "CNZ" | "CM" | "CP" | "CPE" | "CPO" |
+        "RET" | "RC" | "RNC" | "RZ" | "RNZ" | "RM" | "RP" | "RPE" | "RPO" |
+        "RST" |
+        "IN" | "OUT" |
+        "NOP" | "HLT" |
+        "DI" | "EI" | "RIM" | "SIM" => TokenType::OPERATION,
         "A" | "B" | "C" | "D" | "E" | "PSW" | "H" | "L" | "SP" => TokenType::REGISTER,
         _ => TokenType::ILLEGAL,
     }
