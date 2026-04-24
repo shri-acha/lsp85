@@ -39,25 +39,47 @@ pub fn hover_handler(
                         (col >= tok_start) && (col < tok_end)
                     })
         })
-        .map(|token| token.tok_literal);
+        .map(|token| token);
+    
+    if let Some(ref word) = hovered_word {
+        if word.tok_type != TokenType::IMM_VALUE {
+            let info = hovered_word.and_then(|word| {
+                get_documentation()
+                    .into_iter()
+                    .find(|i| i.label == word.tok_literal)
+            });
 
-    let info = hovered_word.and_then(|word| {
-        get_documentation()
-            .into_iter()
-            .find(|i| i.label == word)
-    });
-
-    match info {
-        Some(info) => {
-            let hover_result = lsp_types::Hover {
-                contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
+            match info {
+                Some(info) => {
+                    let hover_result = lsp_types::Hover {
+                        contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
+                            kind: lsp_types::MarkupKind::Markdown,
+                            value: format!("**{}**\n\n{}", info.detail, info.documentation),
+                        }),
+                        range: None,
+                    };
+                    serde_json::to_value(&hover_result)
+                }
+                None => serde_json::to_value(Option::<lsp_types::Hover>::None),
+            }
+        }else{
+            let hover_result = lsp_types::Hover{
+                contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent { 
                     kind: lsp_types::MarkupKind::Markdown,
-                    value: format!("**{}**\n\n{}", info.detail, info.documentation),
-                }),
+                    value: format!("**Immediate value**\n\n{}",word.tok_literal) }),
                 range: None,
             };
             serde_json::to_value(&hover_result)
         }
-        None => serde_json::to_value(Option::<lsp_types::Hover>::None),
+    }else{
+            let hover_result = lsp_types::Hover{
+                contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent { 
+                    kind: lsp_types::MarkupKind::Markdown,
+                    value: format!("No information available!"),
+                }),
+                range: None,
+            };
+            serde_json::to_value(&hover_result)
     }
+
 }

@@ -6,13 +6,11 @@ mod server;
 // use frontend::token::{Token, TokenType,Location};
 // use frontend::utils::files::get_source_buffer;
 
-use lsp_server::{ExtractError, Message, Notification, Request, RequestId, Response};
+use lsp_server::{ExtractError, Message, Notification, Response};
 use lsp_types::{
-    CompletionItem, CompletionResponse,
     request::{Completion, HoverRequest},
 };
-use server::bindings::{wasm_completion_handler, wasm_hover_handler};
-use server::{handlers, lsp85, routers};
+use server::{handlers, lsp85};
 use std::error::Error;
 
 pub fn main() -> Result<(), Box<dyn Error>> {
