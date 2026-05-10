@@ -6,8 +6,8 @@ pub mod utils;
 
 use lsp_server::{Connection, IoThreads, RequestId};
 use lsp_types::{
-    ClientCapabilities, CompletionOptions, HoverProviderCapability, InitializeParams,
-    ServerCapabilities,
+    ClientCapabilities, CompletionOptions, DiagnosticOptions, HoverProviderCapability,
+    InitializeParams, ServerCapabilities,
 };
 use std::error::Error;
 
@@ -74,6 +74,29 @@ impl lsp85 {
             .as_mut()
             .expect("[ERROR] Expected existing server_cap!")
             .hover_provider = Some(HoverProviderCapability::Simple(true));
+        self
+    }
+    pub fn enable_diagnostics(mut self) -> Self {
+        self.server_cap
+            .as_mut()
+            .expect("[ERROR] Expected existing server_cap!")
+            .diagnostic_provider = Some(lsp_types::DiagnosticServerCapabilities::Options(
+            DiagnosticOptions {
+                ..Default::default()
+            },
+        ));
+        self
+    }
+
+    pub fn enable_signature_help(mut self) -> Self {
+        self.server_cap
+            .as_mut()
+            .expect("[ERROR] Expected existing server_cap!")
+            .signature_help_provider = Some(lsp_types::SignatureHelpOptions {
+            trigger_characters: Some(vec![" ".to_string(), ",".to_string()]),
+            retrigger_characters: None,
+            work_done_progress_options: Default::default(),
+        });
         self
     }
 

@@ -50,7 +50,7 @@ impl Node {
 impl Parser {
     pub fn parse_expression(&mut self) -> Option<Node> {
         if let Some(peeked_token) = self.tok_stream.peek() {
-            println!("parse_expression() called! {:?}", peeked_token);
+            eprintln!("parse_expression() called! {:?}", peeked_token);
             match peeked_token {
                 Token {
                     tok_type: TokenType::OPERATION,
@@ -60,11 +60,15 @@ impl Parser {
                     tok_type: TokenType::REGISTER,
                     ..
                 } => {
-                    println!("unexpected placement of register!");
+                    eprintln!("unexpected placement of register!");
                     None
                 }
                 Token {
                     tok_type: TokenType::EOF,
+                    ..
+                } => None,
+                Token {
+                    tok_type: TokenType::EOL,
                     ..
                 } => None,
                 _ => {
@@ -84,10 +88,15 @@ impl Parser {
             return None;
         }
         self.tok_stream.next();
+
         if let Some(peeked_token) = self.tok_stream.peek() {
             match peeked_token {
                 Token {
                     tok_type: TokenType::REGISTER,
+                    ..
+                }
+                | Token {
+                    tok_type: TokenType::IMM_VALUE,
                     ..
                 } => {
                     l_child.branch.l_child = self.parse_operand();
@@ -106,7 +115,8 @@ impl Parser {
                 Token {
                     tok_type: TokenType::REGISTER,
                     ..
-                } | Token {
+                }
+                | Token {
                     tok_type: TokenType::IMM_VALUE,
                     ..
                 } => {

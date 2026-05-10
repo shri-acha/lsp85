@@ -1,6 +1,8 @@
+use std::io;
+
 use crate::frontend::token::{Location, Token, TokenType};
 
-#[derive(Debug)]
+#[derive(Debug,Default)]
 pub struct Lexer {
     chars: Vec<char>,         // pre-computed characters for O(1) access
     pub ch: char,             // current literal
@@ -10,10 +12,13 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    pub fn new(source: String, line_no: usize) -> Self {
+    pub fn new(source: String, line_no: usize) -> io::Result<Self> {
         let chars: Vec<char> = source.chars().collect();
-        let ch = chars.first().copied().expect("source of size <1?");
-        Self {
+        let ch = chars
+            .first()
+            .copied()
+            .ok_or(io::Error::other("Size of source <1!"))?;
+        Ok(Self {
             chars,
             ch,
             curr_position: 0,
@@ -22,7 +27,7 @@ impl Lexer {
                 row: line_no,
                 col: 0,
             },
-        }
+        })
     }
 }
 
@@ -126,29 +131,14 @@ impl Lexer {
 }
 fn get_identifier_token(identifier_lit: &str) -> TokenType {
     match identifier_lit {
-        "ADD" | "ADI" | "ADC" | "ACI" |
-        "SUB" | "SUI" | "SBB" | "SBI" |
-        "MOV" | "MVI" |
-        "LDA" | "LDAX" | "LHLD" | "LXI" |
-        "STA" | "STAX" | "SHLD" |
-        "PUSH" | "POP" |
-        "INR" | "INX" |
-        "DCR" | "DCX" |
-        "DAD" | "DAA" |
-        "XCHG" | "XTHL" | "SPHL" | "PCHL" |
-        "ANA" | "ANI" |
-        "ORA" | "ORI" |
-        "XRA" | "XRI" |
-        "CMP" | "CPI" |
-        "CMA" | "CMC" | "STC" |
-        "RLC" | "RRC" | "RAL" | "RAR" |
-        "JMP" | "JC" | "JNC" | "JZ" | "JNZ" | "JM" | "JP" | "JPE" | "JPO" |
-        "CALL" | "CC" | "CNC" | "CZ" | "CNZ" | "CM" | "CP" | "CPE" | "CPO" |
-        "RET" | "RC" | "RNC" | "RZ" | "RNZ" | "RM" | "RP" | "RPE" | "RPO" |
-        "RST" |
-        "IN" | "OUT" |
-        "NOP" | "HLT" |
-        "DI" | "EI" | "RIM" | "SIM" => TokenType::OPERATION,
+        "ADD" | "ADI" | "ADC" | "ACI" | "SUB" | "SUI" | "SBB" | "SBI" | "MOV" | "MVI" | "LDA"
+        | "LDAX" | "LHLD" | "LXI" | "STA" | "STAX" | "SHLD" | "PUSH" | "POP" | "INR" | "INX"
+        | "DCR" | "DCX" | "DAD" | "DAA" | "XCHG" | "XTHL" | "SPHL" | "PCHL" | "ANA" | "ANI"
+        | "ORA" | "ORI" | "XRA" | "XRI" | "CMP" | "CPI" | "CMA" | "CMC" | "STC" | "RLC" | "RRC"
+        | "RAL" | "RAR" | "JMP" | "JC" | "JNC" | "JZ" | "JNZ" | "JM" | "JP" | "JPE" | "JPO"
+        | "CALL" | "CC" | "CNC" | "CZ" | "CNZ" | "CM" | "CP" | "CPE" | "CPO" | "RET" | "RC"
+        | "RNC" | "RZ" | "RNZ" | "RM" | "RP" | "RPE" | "RPO" | "RST" | "IN" | "OUT" | "NOP"
+        | "HLT" | "DI" | "EI" | "RIM" | "SIM" => TokenType::OPERATION,
         "A" | "B" | "C" | "D" | "E" | "PSW" | "H" | "L" | "SP" => TokenType::REGISTER,
         _ => TokenType::ILLEGAL,
     }
@@ -162,7 +152,7 @@ mod tests {
     #[test]
     fn imm_test() {
         let source = String::from("MVI A,05H\n");
-        let mut l = Lexer::new(source, 0);
+        let l = Lexer::new(source, 0).unwrap();
         let mut tokens: Vec<Token> = vec![];
         for token in l {
             tokens.push(token);
@@ -198,7 +188,7 @@ mod tests {
     #[test]
     fn reg_pair() {
         let source = String::from("MVI A,SP\n");
-        let mut l = Lexer::new(source, 0);
+        let l = Lexer::new(source, 0).unwrap();
         let mut tokens: Vec<Token> = vec![];
         for token in l {
             tokens.push(token);

@@ -9,15 +9,20 @@ mod server;
 use lsp_server::{ExtractError, Message, Notification, Response};
 use lsp_types::{
     request::{Completion, HoverRequest},
+    SignatureHelpParams,
 };
 use server::{handlers, lsp85};
 use std::error::Error;
+
+use crate::server::handlers::{diagnostic_handler, signature_help_handler};
 
 pub fn main() -> Result<(), Box<dyn Error>> {
     let lsp = lsp85::build()
         .stdio()
         .enable_hover()
         .enable_completion()
+        .enable_diagnostics()
+        .enable_signature_help()
         .initialize();
 
     let lsp = match lsp {
@@ -54,7 +59,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 }
                 eprintln!("got request: {:?}", req);
 
-                lsp_router!(req,lsp,{
+                let _ = lsp_router!(req,lsp,{
                     Completion=>handlers::completion_handler,
                     HoverRequest=>handlers::hover_handler,
                 });
@@ -64,13 +69,27 @@ pub fn main() -> Result<(), Box<dyn Error>> {
             }
             Message::Notification(n) => {
                 match &n {
-                    Notification { method, .. }
-                        if *method == String::from("textDocument/didSave") =>
-                    {
-                        eprintln!("File saved!");
-                    }
-                    e => {
-                        eprintln!("unimplemented {:?}", e);
+                    Notification { method, params } => {
+                        if *method == String::from("textDocument/didSave") {
+                            eprintln!("Document saved!, running diagnostics!");
+                            let result = diagnostic_handler(params)?;
+                            conn.sender
+                                .send(Message::Notification(lsp_server::Notification {
+                                    method: "textDocument/publishDiagnostics".to_string(),
+                                    params: result,
+                                }))?;
+                        } else if *method == String::from("textDocument/signatureHelp") {
+                            let params: SignatureHelpParams =
+                                serde_json::from_value(params.clone())?;
+                            let result = signature_help_handler(params)?;
+                            conn.sender
+                                .send(Message::Notification(lsp_server::Notification {
+                                    method: "textDocument/publishSignatureHelp".to_string(),
+                                    params: result,
+                                }))?;
+                        } else {
+                            eprintln!("unimplemented");
+                        }
                     }
                 }
                 eprintln!("notification: {:?}", n);
