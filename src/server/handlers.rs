@@ -10,7 +10,7 @@ use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidSaveTextDocumentParams, Position, PublishDiagnosticsParams,
     Range, Uri,
 };
-use lsp_types::{SignatureHelp, SignatureHelpParams, SignatureInformation};
+// use lsp_types::{SignatureHelp, SignatureHelpParams, SignatureInformation};
 
 use crate::frontend::utils::files::get_source_line;
 
@@ -179,9 +179,23 @@ fn inspect_node(node: &Node, diagnostics: &mut Vec<Diagnostic>) {
 
 fn expected_operand_count(op: &str) -> usize {
     match op.to_uppercase().as_str() {
-        "NOP" | "RET" | "HLT" => 0,
-        "PUSH" | "POP" | "JMP" | "CALL" | "NOT" => 1,
-        "MOV" | "ADD" | "SUB" | "AND" | "OR" | "XOR" | "CMP" => 2,
+        // 0 operands
+        "NOP" | "HLT" | "RET" | "RLC" | "RRC" | "RAL" | "RAR" | "CMA" | "STC" | "CMC" | "DAA"
+        | "XCHG" | "XTHL" | "SPHL" | "PCHL" | "EI" | "DI" | "RZ" | "RNZ" | "RC" | "RNC" | "RPE"
+        | "RPO" | "RP" | "RM" => 0,
+
+        // 1 operand
+        "ADD" | "ADC" | "SUB" | "SBB" | "ANA" | "ORA" | "XRA" | "CMP" | "INR" | "DCR" | "PUSH"
+        | "POP" | "DAD" | "INX" | "DCX" | "LDAX" | "STAX" => 1,
+
+        // 1 operand
+        "ADI" | "ACI" | "SUI" | "SBI" | "ANI" | "ORI" | "XRI" | "CPI" | "JMP" | "JZ" | "JNZ"
+        | "JC" | "JNC" | "JPE" | "JPO" | "JP" | "JM" | "CALL" | "CZ" | "CNZ" | "CC" | "CNC"
+        | "CPE" | "CPO" | "CP" | "CM" | "STA" | "LDA" | "SHLD" | "LHLD" | "OUT" | "IN" | "RST" => 1,
+
+        // 2 operands
+        "MOV" | "MVI" | "LXI" => 2,
+
         _ => 0,
     }
 }
@@ -205,42 +219,42 @@ fn make_diagnostic(tok: &Token, severity: DiagnosticSeverity, message: &str) -> 
     }
 }
 
-pub fn signature_help_handler(
-    params: SignatureHelpParams,
-) -> Result<serde_json::Value, serde_json::Error> {
-    let position = params.text_document_position_params.position;
-    let file_name = params
-        .text_document_position_params
-        .text_document
-        .uri
-        .path()
-        .as_str();
-
-    let signature = get_source_line(file_name, position.line)
-        .and_then(|line| line.ok())
-        .and_then(|line| {
-            let mut lexer = Lexer::new(line, position.line as usize).ok()?;
-            lexer.find(|tok| tok.tok_type == TokenType::OPERATION)
-        })
-        .and_then(|op_tok| {
-            get_documentation()
-                .into_iter()
-                .find(|i| i.label == op_tok.tok_literal)
-        })
-        .map(|info| SignatureInformation {
-            label: info.label.to_string(),
-            documentation: Some(lsp_types::Documentation::String(
-                info.documentation.to_string(),
-            )),
-            parameters: None,
-            active_parameter: None,
-        });
-
-    let result = signature.map(|sig| SignatureHelp {
-        signatures: vec![sig],
-        active_signature: Some(0),
-        active_parameter: None,
-    });
-
-    serde_json::to_value(result)
-}
+// pub fn signature_help_handler(
+//     params: SignatureHelpParams,
+// ) -> Result<serde_json::Value, serde_json::Error> {
+//     let position = params.text_document_position_params.position;
+//     let file_name = params
+//         .text_document_position_params
+//         .text_document
+//         .uri
+//         .path()
+//         .as_str();
+//
+//     let signature = get_source_line(file_name, position.line)
+//         .and_then(|line| line.ok())
+//         .and_then(|line| {
+//             let mut lexer = Lexer::new(line, position.line as usize).ok()?;
+//             lexer.find(|tok| tok.tok_type == TokenType::OPERATION)
+//         })
+//         .and_then(|op_tok| {
+//             get_documentation()
+//                 .into_iter()
+//                 .find(|i| i.label == op_tok.tok_literal)
+//         })
+//         .map(|info| SignatureInformation {
+//             label: info.label.to_string(),
+//             documentation: Some(lsp_types::Documentation::String(
+//                 info.documentation.to_string(),
+//             )),
+//             parameters: None,
+//             active_parameter: None,
+//         });
+//
+//     let result = signature.map(|sig| SignatureHelp {
+//         signatures: vec![sig],
+//         active_signature: Some(0),
+//         active_parameter: None,
+//     });
+//
+//     serde_json::to_value(result)
+// }

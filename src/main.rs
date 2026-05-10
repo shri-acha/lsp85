@@ -7,14 +7,11 @@ mod server;
 // use frontend::utils::files::get_source_buffer;
 
 use lsp_server::{ExtractError, Message, Notification, Response};
-use lsp_types::{
-    request::{Completion, HoverRequest},
-    SignatureHelpParams,
-};
+use lsp_types::request::{Completion, HoverRequest};
 use server::{handlers, lsp85};
 use std::error::Error;
 
-use crate::server::handlers::{diagnostic_handler, signature_help_handler};
+use crate::server::handlers::diagnostic_handler;
 
 pub fn main() -> Result<(), Box<dyn Error>> {
     let lsp = lsp85::build()
@@ -76,15 +73,6 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                             conn.sender
                                 .send(Message::Notification(lsp_server::Notification {
                                     method: "textDocument/publishDiagnostics".to_string(),
-                                    params: result,
-                                }))?;
-                        } else if *method == String::from("textDocument/signatureHelp") {
-                            let params: SignatureHelpParams =
-                                serde_json::from_value(params.clone())?;
-                            let result = signature_help_handler(params)?;
-                            conn.sender
-                                .send(Message::Notification(lsp_server::Notification {
-                                    method: "textDocument/publishSignatureHelp".to_string(),
                                     params: result,
                                 }))?;
                         } else {
