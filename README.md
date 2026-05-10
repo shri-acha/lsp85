@@ -3,6 +3,8 @@ This project will soon be part of https://github.com/debjitbis08/sim8085/, but w
 - [x] Code completions
 - [x] Populate for all the instructions
 - [x] Hover information
+- [x] Error Diagnostics
+- [x] Signature Help
 
 Code Completions:
 <img width="1404" height="325" alt="image" src="https://github.com/user-attachments/assets/68892087-4392-4610-8b7b-7c574700e58e" />
