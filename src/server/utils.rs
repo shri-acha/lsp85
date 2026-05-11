@@ -1,7 +1,18 @@
+use std::io::{self, Error};
+use substring::Substring;
+
 pub struct InstructionInfo {
     pub label: &'static str,
     pub detail: &'static str,
     pub documentation: &'static str,
+}
+
+pub fn parse_immediate_val(literal: &String) -> io::Result<u64> {
+    let lit_len = literal.len();
+    literal
+        .substring(0, lit_len - 1)
+        .parse::<u64>()
+        .map_err(|_| Error::other("Error parsing immediate_value!"))
 }
 
 pub fn get_documentation() -> Vec<InstructionInfo> {

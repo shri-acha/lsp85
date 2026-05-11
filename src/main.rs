@@ -3,13 +3,13 @@ mod server;
 
 use lsp_server::{ExtractError, Message, Notification, Response};
 use lsp_types::request::{Completion, HoverRequest, SignatureHelpRequest};
-use server::{handlers, lsp85};
+use server::{handlers, Lsp85};
 use std::error::Error;
 
 use crate::server::handlers::diagnostic_handler;
 
 pub fn main() -> Result<(), Box<dyn Error>> {
-    let lsp = lsp85::build()
+    let lsp = Lsp85::build()
         .stdio()
         .enable_hover()
         .enable_completion()

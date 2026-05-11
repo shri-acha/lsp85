@@ -4,6 +4,7 @@ pub struct Location {
     pub col: usize,
 }
 impl Location {
+    #[allow(dead_code)]
     pub fn new(row: usize, col: usize) -> Self {
         Self { row, col }
     }
@@ -41,11 +42,13 @@ impl Token {
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TokenType {
     OPERATION,
-    IMM_VALUE,
+    ImmValue,
     REGISTER,
-    COMMA_DELIM,
+    CommaDelim,
+    #[allow(dead_code)]
     BOL,
     EOL,
+    #[allow(dead_code)]
     EOF,
     ILLEGAL,
 }

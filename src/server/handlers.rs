@@ -1,8 +1,7 @@
-use std::io;
-
 use crate::frontend::token::{Token, TokenType};
-use crate::frontend::{lexer, parser, parser::Node};
+use crate::frontend::{parser, parser::Node};
 use crate::server::utils::get_documentation;
+use crate::server::utils::parse_immediate_val;
 use crate::{frontend::lexer::Lexer, server::completion_items::get_completion_items};
 use lsp_server::RequestId;
 use lsp_types::{CompletionParams, CompletionResponse, HoverParams};
@@ -11,6 +10,8 @@ use lsp_types::{
     Range, Uri,
 };
 use lsp_types::{SignatureHelp, SignatureHelpParams, SignatureInformation};
+use serde::de::Error;
+use std::io;
 
 use crate::frontend::utils::files::get_source_line;
 
@@ -44,7 +45,7 @@ pub fn hover_handler(
                 .filter(|tok| {
                     matches!(
                         tok.tok_type,
-                        TokenType::OPERATION | TokenType::REGISTER | TokenType::IMM_VALUE
+                        TokenType::OPERATION | TokenType::REGISTER | TokenType::ImmValue
                     )
                 })
                 .find(|tok| {
@@ -56,7 +57,7 @@ pub fn hover_handler(
         .map(|token| token);
 
     if let Some(ref word) = hovered_word {
-        if word.tok_type != TokenType::IMM_VALUE {
+        if word.tok_type != TokenType::ImmValue {
             let info = hovered_word.and_then(|word| {
                 get_documentation()
                     .into_iter()
@@ -77,10 +78,16 @@ pub fn hover_handler(
                 None => serde_json::to_value(Option::<lsp_types::Hover>::None),
             }
         } else {
+            let value_lit = parse_immediate_val(&word.tok_literal).map_err(|e| Error::custom(e))?;
             let hover_result = lsp_types::Hover {
                 contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                     kind: lsp_types::MarkupKind::Markdown,
-                    value: format!("**Immediate value**\n\n{}", word.tok_literal),
+                    value: format!(
+                        "**Immediate value**\n\nHexadecimal:0x{:X}\nBinary:{:b}\nDecimal:{}",
+                        value_lit,
+                        value_lit,
+                        value_lit
+                    ),
                 }),
                 range: None,
             };

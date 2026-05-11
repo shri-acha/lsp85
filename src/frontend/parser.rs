@@ -28,6 +28,7 @@ impl Tree {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new(l_child: Option<Node>, r_child: Option<Node>) -> Self {
         Self { l_child, r_child }
     }
@@ -96,7 +97,7 @@ impl Parser {
                     ..
                 }
                 | Token {
-                    tok_type: TokenType::IMM_VALUE,
+                    tok_type: TokenType::ImmValue,
                     ..
                 } => {
                     l_child.branch.l_child = self.parse_operand();
@@ -117,7 +118,7 @@ impl Parser {
                     ..
                 }
                 | Token {
-                    tok_type: TokenType::IMM_VALUE,
+                    tok_type: TokenType::ImmValue,
                     ..
                 } => {
                     let token_buffer = peeked_token.clone();
@@ -125,7 +126,7 @@ impl Parser {
                     Some(Node::new(token_buffer, Box::new(Tree::default())))
                 }
                 Token {
-                    tok_type: TokenType::COMMA_DELIM,
+                    tok_type: TokenType::CommaDelim,
                     ..
                 } => {
                     self.tok_stream.next();

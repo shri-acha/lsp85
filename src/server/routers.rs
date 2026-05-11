@@ -1,5 +1,4 @@
 use lsp_server::{ExtractError, Request, RequestId};
-use serde::de::DeserializeOwned;
 
 pub fn cast<R>(req: Request) -> Result<(RequestId, R::Params), ExtractError<Request>>
 where

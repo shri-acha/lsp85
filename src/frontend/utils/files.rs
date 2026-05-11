@@ -3,9 +3,9 @@ use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Lines;
-use std::io::Read;
 use std::iter::Enumerate;
 
+#[allow(dead_code)]
 pub fn get_source_buffer(f_name: & str) -> Option<Enumerate<Lines<BufReader<File>>>> {
     let file = File::open(f_name).ok()?;
     let buffer = BufReader::new(file);

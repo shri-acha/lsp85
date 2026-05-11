@@ -11,7 +11,7 @@ use lsp_types::{
 };
 use std::error::Error;
 
-pub struct lsp85 {
+pub struct Lsp85 {
     id: Option<RequestId>,
     pub conn: Option<Connection>,
     pub io_threads: Option<IoThreads>,
@@ -20,7 +20,7 @@ pub struct lsp85 {
 }
 
 // builder methods
-impl lsp85 {
+impl Lsp85 {
     pub fn build() -> Self {
         return Self {
             id: None,
@@ -56,7 +56,7 @@ impl lsp85 {
                     .expect("[[ERROR] Failed to parse initialization params!");
                 self.client_cap = Some(init_params.capabilities);
             }
-            Err(e) => {
+            Err(_) => {
                 eprintln!("[ERROR] Failed to initialize LSP");
             }
         }

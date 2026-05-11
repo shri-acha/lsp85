@@ -46,7 +46,7 @@ impl Iterator for Lexer {
                 self.consume();
                 return Some(Token::new(
                     1,
-                    TokenType::COMMA_DELIM,
+                    TokenType::CommaDelim,
                     self.location,
                     String::from(','),
                 ));
@@ -123,7 +123,7 @@ impl Lexer {
         }
         Token::new(
             immediate_buf.len(),
-            TokenType::IMM_VALUE,
+            TokenType::ImmValue,
             self.location,
             immediate_buf,
         )
@@ -169,13 +169,13 @@ mod tests {
                 Token::new(1, TokenType::REGISTER, Location::new(0, 5), "A".to_string()),
                 Token::new(
                     1,
-                    TokenType::COMMA_DELIM,
+                    TokenType::CommaDelim,
                     Location::new(0, 6),
                     ",".to_string()
                 ),
                 Token::new(
                     3,
-                    TokenType::IMM_VALUE,
+                    TokenType::ImmValue,
                     Location::new(0, 9),
                     "05H".to_string()
                 ),
@@ -205,7 +205,7 @@ mod tests {
                 Token::new(1, TokenType::REGISTER, Location::new(0, 5), "A".to_string()),
                 Token::new(
                     1,
-                    TokenType::COMMA_DELIM,
+                    TokenType::CommaDelim,
                     Location::new(0, 6),
                     ",".to_string()
                 ),
