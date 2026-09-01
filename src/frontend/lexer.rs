@@ -4,11 +4,11 @@ use crate::frontend::token::{Location, Token, TokenType};
 
 #[derive(Debug,Default)]
 pub struct Lexer {
-    chars: Vec<char>,         // pre-computed characters for O(1) access
-    pub ch: char,             // current literal
-    pub curr_position: usize, // current position
-    pub read_position: usize, // next position
-    pub location: Location,   // current location
+    chars: Vec<char>,
+    pub ch: char,
+    pub curr_position: usize,
+    pub read_position: usize,
+    pub location: Location,
 }
 
 impl Lexer {
@@ -138,13 +138,11 @@ impl Lexer {
     pub fn read_immediate(&mut self) -> Token {
         let mut immediate_buf = String::new();
 
-        //Support for hex digits
         while self.ch.is_ascii_hexdigit() {
             immediate_buf.push(self.ch);
             self.consume();
         }
 
-        //H suffix handling Eg: 123AH
         if self.ch == 'H' {
             immediate_buf.push(self.ch);
             self.consume();

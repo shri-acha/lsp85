@@ -15,7 +15,7 @@ pub struct Token {
     pub tok_literal: String,
     pub tok_type: TokenType,
     pub location: Location,
-    pub offset: usize, // -ve char offset
+    pub offset: usize,
 }
 
 impl Token {
@@ -34,11 +34,6 @@ impl Token {
     }
 }
 
-// ADD A,B
-//
-// INSTRUCTION
-// OPERATION REGISTER COMMA_DELIM REGISTER
-//
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TokenType {
     OPERATION,

@@ -126,7 +126,6 @@ fn analyze_document(
 ) -> Result<Vec<Diagnostic>, Box<dyn std::error::Error>> {
     eprintln!("document analysis called!");
     let Some(text) = text else {
-        // If text isn't sent on save, read from disk
         let path = uri.path().as_str();
         let Ok(content) = std::fs::read_to_string(path) else {
 
@@ -186,21 +185,17 @@ fn inspect_node(node: &Node, diagnostics: &mut Vec<Diagnostic>) {
 
 fn expected_operand_count(op: &str) -> usize {
     match op.to_uppercase().as_str() {
-        // 0 operands
         "NOP" | "HLT" | "RET" | "RLC" | "RRC" | "RAL" | "RAR" | "CMA" | "STC" | "CMC" | "DAA"
         | "XCHG" | "XTHL" | "SPHL" | "PCHL" | "EI" | "DI" | "RZ" | "RNZ" | "RC" | "RNC" | "RPE"
         | "RPO" | "RP" | "RM" => 0,
 
-        // 1 operand
         "ADD" | "ADC" | "SUB" | "SBB" | "ANA" | "ORA" | "XRA" | "CMP" | "INR" | "DCR" | "PUSH"
         | "POP" | "DAD" | "INX" | "DCX" | "LDAX" | "STAX" => 1,
 
-        // 1 operand
         "ADI" | "ACI" | "SUI" | "SBI" | "ANI" | "ORI" | "XRI" | "CPI" | "JMP" | "JZ" | "JNZ"
         | "JC" | "JNC" | "JPE" | "JPO" | "JP" | "JM" | "CALL" | "CZ" | "CNZ" | "CC" | "CNC"
         | "CPE" | "CPO" | "CP" | "CM" | "STA" | "LDA" | "SHLD" | "LHLD" | "OUT" | "IN" | "RST" => 1,
 
-        // 2 operands
         "MOV" | "MVI" | "LXI" => 2,
 
         _ => 0,

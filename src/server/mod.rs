@@ -21,7 +21,6 @@ pub struct Lsp85 {
     server_cap: Option<ServerCapabilities>,
 }
 
-// builder methods
 impl Lsp85 {
     pub fn build() -> Self {
         return Self {
@@ -43,7 +42,6 @@ impl Lsp85 {
         self
     }
 
-    // expects self.connection defined before hand
     fn populate_client_cap(&mut self) {
         match self
             .conn
@@ -102,7 +100,6 @@ impl Lsp85 {
         self
     }
 
-    // expects self.connection and self.id
     pub fn initialize(self) -> Result<Self, Box<dyn Error + Sync + Send>> {
         let initialize_data = serde_json::json!({
             "capabilities": self.server_cap,

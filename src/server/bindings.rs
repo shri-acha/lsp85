@@ -19,13 +19,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
-// ── In-memory document store ──────────────────────────────────────────
 static DOCUMENTS: std::sync::LazyLock<Mutex<HashMap<String, String>>> =
     std::sync::LazyLock::new(|| Mutex::new(HashMap::new()));
 
-
-
-// ── JSON-RPC types (subset needed for WASM transport) ─────────────────
 #[derive(Debug, Deserialize)]
 struct JsonRpcMessage {
     jsonrpc: String,
@@ -53,9 +49,6 @@ struct JsonRpcNotification {
     params: Value,
 }
 
-// ── Public WASM entry point ───────────────────────────────────────────
-/// Accepts a JSON-RPC message string, processes it, and returns a JSON
-/// array of response/notification strings to send back to the client.
 #[wasm_bindgen]
 pub fn wasm_handle_message(message: &str) -> Result<JsValue, JsValue> {
     let msg: JsonRpcMessage = serde_json::from_str(message)
@@ -64,7 +57,6 @@ pub fn wasm_handle_message(message: &str) -> Result<JsValue, JsValue> {
     let mut responses: Vec<String> = Vec::new();
 
     match msg.method.as_deref() {
-        // ── Lifecycle ────────────────────────────────────────────
         Some("initialize") => {
             let caps = build_server_capabilities();
             let result = serde_json::json!({
@@ -76,13 +68,12 @@ pub fn wasm_handle_message(message: &str) -> Result<JsValue, JsValue> {
             });
             responses.push(make_response(msg.id.unwrap_or(Value::Null), Some(result), None));
         }
-        Some("initialized") => { /* no-op notification */ }
+        Some("initialized") => {}
         Some("shutdown") => {
             responses.push(make_response(msg.id.unwrap_or(Value::Null), Some(Value::Null), None));
         }
-        Some("exit") => { /* no-op */ }
+        Some("exit") => {}
 
-        // ── Document synchronization ────────────────────────────
         Some("textDocument/didOpen") => {
             if let Some(params) = msg.params {
                 if let (Some(uri), Some(text)) = (
@@ -137,37 +128,31 @@ pub fn wasm_handle_message(message: &str) -> Result<JsValue, JsValue> {
             }
         }
 
-        // ── Completion ──────────────────────────────────────────
         Some("textDocument/completion") => {
             let completion_result = handle_completion(msg.params.as_ref());
             responses.push(make_response(msg.id.unwrap_or(Value::Null), Some(completion_result), None));
         }
 
-        // ── Hover ───────────────────────────────────────────────
         Some("textDocument/hover") => {
             let hover_result = handle_hover(msg.params.as_ref());
             responses.push(make_response(msg.id.unwrap_or(Value::Null), Some(hover_result), None));
         }
 
-        // ── Go to Definition ─────────────────────────────────────
         Some("textDocument/definition") => {
             let def_result = handle_definition(msg.params.as_ref());
             responses.push(make_response(msg.id.unwrap_or(Value::Null), Some(def_result), None));
         }
 
-        // ── Document Symbols ────────────────────────────────────
         Some("textDocument/documentSymbol") => {
             let sym_result = handle_document_symbol(msg.params.as_ref());
             responses.push(make_response(msg.id.unwrap_or(Value::Null), Some(sym_result), None));
         }
 
-        // ── Signature Help ──────────────────────────────────────
         Some("textDocument/signatureHelp") => {
             let sig_result = handle_signature_help(msg.params.as_ref());
             responses.push(make_response(msg.id.unwrap_or(Value::Null), Some(sig_result), None));
         }
 
-        // ── Fallback ────────────────────────────────────────────
         Some(_method) => {
             if let Some(id) = msg.id {
                 let error = serde_json::json!({
@@ -186,8 +171,6 @@ pub fn wasm_handle_message(message: &str) -> Result<JsValue, JsValue> {
     }
     Ok(js_array.into())
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────
 
 fn build_server_capabilities() -> ServerCapabilities {
     ServerCapabilities {
@@ -226,9 +209,6 @@ fn make_notification(method: &str, params: Value) -> String {
     serde_json::to_string(&notif).unwrap_or_default()
 }
 
-// ── Diagnostics ───────────────────────────────────
-
-
 fn make_diagnostics_notification(uri: &str, text: &str) -> Option<String> {
     let diagnostics = collect_diagnostics(text);
     let parsed_uri: Uri = uri.parse().ok()?;
@@ -245,7 +225,6 @@ fn collect_diagnostics(text: &str) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
     let (defs, refs) = collect_labels_from_text(text);
 
-    // 1. Check duplicate label definitions
     let mut seen_defs: HashMap<String, u32> = HashMap::new();
     for def in &defs {
         if let Some(&first_line) = seen_defs.get(&def.name) {
@@ -274,7 +253,6 @@ fn collect_diagnostics(text: &str) -> Vec<Diagnostic> {
         }
     }
 
-    // 2. Check undefined label references
     for r in &refs {
         if !seen_defs.contains_key(&r.name) {
             diagnostics.push(Diagnostic {
@@ -296,7 +274,6 @@ fn collect_diagnostics(text: &str) -> Vec<Diagnostic> {
         }
     }
 
-    // 3. Instruction operand count diagnostics
     let mut tokens: Vec<Token> = vec![];
     for (line_idx, line) in text.lines().enumerate() {
         if let Ok(lexer) = Lexer::new(line.to_string(), line_idx) {
@@ -347,14 +324,9 @@ fn inspect_node(node: &Node, diagnostics: &mut Vec<Diagnostic>) {
     }
 }
 
-
-
-// ── Completion handler ───────────────────────────────────────────────
-
 fn handle_completion(params: Option<&Value>) -> Value {
     let mut items = get_completion_items();
 
-    // Include dynamically collected labels from active document
     if let Some(params) = params {
         if let Some(uri) = params.get("textDocument").and_then(|td| td.get("uri")).and_then(|u| u.as_str()) {
             let docs = DOCUMENTS.lock().unwrap();
@@ -384,8 +356,6 @@ fn handle_completion(params: Option<&Value>) -> Value {
     let response = CompletionResponse::Array(items);
     serde_json::to_value(&response).unwrap_or(Value::Null)
 }
-
-// ── Hover handler ───────────────────────────────────────────────────
 
 fn handle_hover(params: Option<&Value>) -> Value {
     let params = match params {
@@ -511,8 +481,6 @@ fn handle_hover(params: Option<&Value>) -> Value {
     }
 }
 
-// ── Go to Definition handler ─────────────────────────────────────────
-
 fn handle_definition(params: Option<&Value>) -> Value {
     let params = match params {
         Some(p) => p,
@@ -594,8 +562,6 @@ fn handle_definition(params: Option<&Value>) -> Value {
     serde_json::to_value(loc).unwrap_or(Value::Null)
 }
 
-// ── Document Symbol handler ──────────────────────────────────────────
-
 fn handle_document_symbol(params: Option<&Value>) -> Value {
     let params = match params {
         Some(p) => p,
@@ -653,8 +619,6 @@ fn handle_document_symbol(params: Option<&Value>) -> Value {
     let resp = DocumentSymbolResponse::Nested(symbols);
     serde_json::to_value(resp).unwrap_or(Value::Null)
 }
-
-// ── Signature Help handler ──────────────────────────────────────────
 
 fn handle_signature_help(params: Option<&Value>) -> Value {
     let params = match params {
