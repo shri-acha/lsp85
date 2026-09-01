@@ -3,6 +3,8 @@ pub mod routers;
 pub mod completion_items;
 pub mod handlers;
 pub mod utils;
+pub mod bindings;
+
 
 use lsp_server::{Connection, IoThreads, RequestId};
 use lsp_types::{
